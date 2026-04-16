@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>SDB — Inventario de Herramientas</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+<style>
+  :root { --amarillo: #F5C400; --fondo: #1A1A1A; --sup: #242424; --borde: #3A3A3A; --texto: #F0EDE4; --verde: #3DB85A; --rojo: #E24B4A; --azul: #3498db; --naranja: #e67e22; --gris: #555; }
+  
+  html, body { background: var(--fondo); color: var(--texto); font-family: -apple-system, sans-serif; height: 100%; width: 100%; margin: 0; padding: 0; overflow: hidden; position: fixed; }
+
+  #header-fijo { position: absolute; top: 0; left: 0; right: 0; background: var(--sup); z-index: 100; border-bottom: 2px solid var(--amarillo); padding-bottom: 5px; }
+  .controles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; padding: 8px 6px; }
+  
+  .btn-acc { border: none; padding: 12px 0; border-radius: 4px; font-size: 10px; font-weight: 900; text-transform: uppercase; cursor: pointer; text-align: center; color: white; }
+  
+  .btn-web { background: var(--amarillo); color: #1A1A1A; }
+  .btn-pdf-dia { background: var(--gris); }
+  .btn-excel { background: var(--verde); }
+  
+  .nav-herramientas { display: flex; align-items: center; padding: 0 15px; background: #2E2E2E; justify-content: space-between; height: 45px; border-top: 1px solid var(--borde); }
+  .tit-periodo { font-size: 14px; font-weight: bold; color: var(--amarillo); }
+
+  .grid-header { display: grid; grid-template-columns: 1fr 80px 80px; background: var(--sup); border-top: 1px solid var(--borde); }
+  .d-col { text-align: center; padding: 10px 0; font-size: 11px; font-weight: 700; color: #888; border-left: 1px solid #2a2a2a; }
+
+  #scroll-area { position: absolute; top: 145px; bottom: 0; left: 0; right: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-bottom: 80px; }
+  .fila { display: grid; grid-template-columns: 1fr 80px 80px; border-bottom: 1px solid var(--borde); align-items: center; min-height: 55px; background: var(--fondo); }
+  .nom { font-size: 12px; font-weight: 600; padding-left: 12px; color: #eee; line-height: 1.2; }
+  .sub-info { font-size: 9px; color: #888; display: block; }
+  
+  .btn-est { width: 65px; height: 32px; border-radius: 5px; border: none; background: #2E2E2E; color: #ccc; font-size: 9px; font-weight: bold; margin: auto; }
+  .btn-est.bueno { background: rgba(61,184,90,0.2); color: var(--verde); border: 1px solid var(--verde); }
+  .btn-est.roto { background: rgba(226,75,74,0.2); color: var(--rojo); border: 1px solid var(--rojo); }
+
+  #fab { position: fixed; bottom: 25px; right: 20px; width: 60px; height: 60px; background: var(--amarillo); border-radius: 50%; display: flex; justify-content: center; align-items: center; z-index: 150; border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.6); font-size: 30px; font-weight: bold; }
+
+  .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 2000; flex-direction: column; }
+  .overlay-content { background: var(--sup); width: 90%; max-width: 450px; padding: 20px; border-radius: 15px; border: 1px solid var(--borde); margin: auto; overflow-y: auto; max-height: 80vh; }
+
+  .tabs-header { display: grid; grid-template-columns: repeat(2, 1fr); background: var(--sup); padding: 10px; gap: 4px; width: 100%; border-bottom: 1px solid var(--borde); box-sizing: border-box; }
+  .tab-btn { padding: 12px 0; border: none; border-radius: 6px; background: #333; color: #888; font-size: 10px; font-weight: 800; text-transform: uppercase; }
+  .tab-btn.active { background: var(--amarillo); color: #1A1A1A; }
+  
+  input, select, textarea { background: #111; border: 1px solid var(--borde); color: white; padding: 12px; border-radius: 6px; width: 100%; font-size: 14px; margin: 8px 0; box-sizing: border-box; }
+  label { font-size: 11px; color: var(--amarillo); text-transform: uppercase; font-weight: bold; }
+</style>
+</head>
+<body>
+
+<div id="header-fijo">
+  <div class="controles">
+    <button class="btn-acc btn-web" onclick="guardarDatos()">Guardar</button>
+    <button class="btn-acc btn-pdf-dia" onclick="exportarPDF()">Exportar PDF</button>
+    <button class="btn-acc btn-excel" onclick="alert('Funcionalidad Excel: Próximamente')">Excel</button>
+  </div>
+  <div class="nav-herramientas">
+    <div class="tit-periodo">INVENTARIO SDB-1165</div>
+    <div style="font-size: 10px;" id="fecha-actual"></div>
+  </div>
+  <div class="grid-header">
+    <div class="d-col">HERRAMIENTA</div>
+    <div class="d-col">ESTADO</div>
+    <div class="d-col">INFO</div>
+  </div>
+</div>
+
+<div id="scroll-area">
+  <div id="lista-herramientas"></div>
+</div>
+
+<button id="fab" onclick="abrirModalNuevo()">+</button>
+
+<div class="overlay" id="modal-detalle">
+  <div class="overlay-content">
+    <h3 id="mod-titulo" style="color:var(--amarillo); margin:0 0 15px 0;">Detalle de Herramienta</h3>
+    
+    <label>Estado</label>
+    <select id="mod-estado">
+        <option value="Bueno">Excelente / Nuevo</option>
+        <option value="Regular">Uso Regular</option>
+        <option value="Roto">Roto / Reparación</option>
+        <option value="Perdido">Perdido</option>
+    </select>
+
+    <label>Prestado / Dueño</label>
+    <select id="mod-prestado" onchange="togglePrestador()">
+        <option value="Propio">Propio SDB</option>
+        <option value="Prestado">Prestado</option>
+    </select>
+
+    <div id="sec-prestador" style="display:none">
+        <label>¿Quién lo prestó?</label>
+        <input type="text" id="mod-quien" placeholder="Nombre del dueño">
+    </div>
+
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px">
+        <div>
+            <label>Costo Compra</label>
+            <input type="number" id="mod-costo" placeholder="$">
+        </div>
+        <div>
+            <label>Fecha Compra</label>
+            <input type="date" id="mod-fecha">
+        </div>
+    </div>
+
+    <label>Comentarios / Especificaciones</label>
+    <textarea id="mod-obs" rows="3" placeholder="Ej: Medidas, marca, ubicación..."></textarea>
+
+    <button class="btn-acc" style="background:var(--verde); width:100%; padding:15px; margin-top:10px" onclick="guardarCambios()">ACTUALIZAR DATOS</button>
+    <button class="btn-acc" style="background:var(--rojo); width:100%; padding:10px; margin-top:10px; font-size:9px" onclick="eliminarHerramienta()">ELIMINAR HERRAMIENTA</button>
+    <button onclick="cerrarModales()" style="width:100%; background:none; border:none; color:#888; margin-top:15px">CERRAR</button>
+  </div>
+</div>
+
+<div class="overlay" id="modal-nuevo">
+    <div class="overlay-content">
+      <h3 style="color:var(--amarillo); margin-top:0;">Nueva Herramienta</h3>
+      <label>Nombre de la Herramienta</label>
+      <input type="text" id="new-nombre" placeholder="Ej: Rotopercutora Bosch">
+      <label>Categoría</label>
+      <select id="new-cat">
+          <option value="Eléctrica">Eléctrica</option>
+          <option value="Manual">Manual</option>
+          <option value="Seguridad">Seguridad / Arneses</option>
+          <option value="Varios">Varios (Baldes, palas, etc)</option>
+      </select>
+      <button class="btn-acc" style="background:var(--amarillo); color:black; width:100%; padding:15px; margin-top:10px" onclick="crearHerramienta()">AGREGAR AL INVENTARIO</button>
+      <button onclick="cerrarModales()" style="width:100%; background:none; border:none; color:#888; margin-top:15px">CANCELAR</button>
+    </div>
+</div>
+
+<script>
+// Datos iniciales basados en tu PDF
+let inventario = JSON.parse(localStorage.getItem('sdb_inv_v2')) || [
+    {id: 1, nombre: "Rotopercutora", estado: "Bueno", fechaAct: "14/04", prestado: "Propio", quien: "", costo: 0, fechaC: "", obs: "", cat: "Eléctrica"},
+    {id: 2, nombre: "Dobladora Φ12/16/25", estado: "Bueno", fechaAct: "14/04", prestado: "Propio", quien: "", costo: 0, fechaC: "", obs: "", cat: "Manual"},
+    {id: 3, nombre: "Amoladora Angular (Nueva)", estado: "Bueno", fechaAct: "14/04", prestado: "Propio", quien: "", costo: 0, fechaC: "", obs: "Makita", cat: "Eléctrica"},
+    {id: 4, nombre: "Tijera de corte de hierro", estado: "Perdido", fechaAct: "14/04", prestado: "Propio", quien: "", costo: 0, fechaC: "", obs: "Marcado como perdido en PDF", cat: "Manual"},
+    {id: 5, nombre: "Martillo Demoledor 6 Max (Nuevo)", estado: "Bueno", fechaAct: "06/02", prestado: "Propio", quien: "", costo: 0, fechaC: "2026-02-06", obs: "SDS MAX", cat: "Eléctrica"},
+    {id: 6, nombre: "Puntales Metálicos (x356)", estado: "Bueno", fechaAct: "14/04", prestado: "Propio", quien: "", costo: 0, fechaC: "", obs: "356 propios + 35 prestados", cat: "Varios"}
+];
+
+let editId = null;
+
+function render() {
+    const lista = document.getElementById('lista-herramientas');
+    document.getElementById('fecha-actual').textContent = new Date().toLocaleDateString();
+    
+    lista.innerHTML = inventario.map(h => `
+        <div class="fila">
+            <div class="nom">
+                ${h.nombre}
+                <span class="sub-info">${h.cat} | Act: ${h.fechaAct}</span>
+            </div>
+            <div style="text-align:center">
+                <button class="btn-est ${h.estado.toLowerCase() === 'bueno' ? 'bueno' : (h.estado.toLowerCase() === 'roto' ? 'roto' : '')}" 
+                        onclick="abrirDetalle(${h.id})">
+                    ${h.estado.toUpperCase()}
+                </button>
+            </div>
+            <div style="text-align:center">
+                <button class="btn-est" style="width:40px" onclick="abrirDetalle(${h.id})">i</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+function abrirDetalle(id) {
+    editId = id;
+    const h = inventario.find(x => x.id === id);
+    document.getElementById('mod-titulo').textContent = h.nombre;
+    document.getElementById('mod-estado').value = h.estado;
+    document.getElementById('mod-prestado').value = h.prestado;
+    document.getElementById('mod-quien').value = h.quien;
+    document.getElementById('mod-costo').value = h.costo;
+    document.getElementById('mod-fecha').value = h.fechaC;
+    document.getElementById('mod-obs').value = h.obs;
+    
+    togglePrestador();
+    document.getElementById('modal-detalle').style.display = 'flex';
+}
+
+function togglePrestador() {
+    const v = document.getElementById('mod-prestado').value;
+    document.getElementById('sec-prestador').style.display = (v === 'Prestado') ? 'block' : 'none';
+}
+
+function guardarCambios() {
+    const idx = inventario.findIndex(x => x.id === editId);
+    inventario[idx].estado = document.getElementById('mod-estado').value;
+    inventario[idx].prestado = document.getElementById('mod-prestado').value;
+    inventario[idx].quien = document.getElementById('mod-quien').value;
+    inventario[idx].costo = document.getElementById('mod-costo').value;
+    inventario[idx].fechaC = document.getElementById('mod-fecha').value;
+    inventario[idx].obs = document.getElementById('mod-obs').value;
+    inventario[idx].fechaAct = new Date().toLocaleDateString('es-AR', {day:'2-digit', month:'2-digit'});
+    
+    cerrarModales();
+    render();
+}
+
+function abrirModalNuevo() {
+    document.getElementById('modal-nuevo').style.display = 'flex';
+}
+
+function crearHerramienta() {
+    const nom = document.getElementById('new-nombre').value;
+    if(!nom) return alert("Ponle un nombre");
+    
+    const nueva = {
+        id: Date.now(),
+        nombre: nom,
+        estado: "Bueno",
+        fechaAct: new Date().toLocaleDateString('es-AR', {day:'2-digit', month:'2-digit'}),
+        prestado: "Propio",
+        quien: "",
+        costo: 0,
+        fechaC: "",
+        obs: "",
+        cat: document.getElementById('new-cat').value
+    };
+    
+    inventario.push(nueva);
+    document.getElementById('new-nombre').value = "";
+    cerrarModales();
+    render();
+}
+
+function eliminarHerramienta() {
+    if(confirm("¿Seguro quieres eliminar esta herramienta?")) {
+        inventario = inventario.filter(x => x.id !== editId);
+        cerrarModales();
+        render();
+    }
+}
+
+function cerrarModales() {
+    document.querySelectorAll('.overlay').forEach(o => o.style.display = 'none');
+}
+
+function guardarDatos() {
+    localStorage.setItem('sdb_inv_v2', JSON.stringify(inventario));
+    alert("Inventario guardado localmente.");
+}
+
+function exportarPDF() {
+    const el = document.createElement('div');
+    el.style.padding = "20px";
+    el.style.color = "#000";
+    el.style.fontFamily = "Arial";
+    
+    let tabla = `<h2>SDB - REPORTE DE INVENTARIO</h2>
+    <table border="1" style="width:100%; border-collapse:collapse; font-size:10px">
+        <thead>
+            <tr style="background:#eee">
+                <th>HERRAMIENTA</th><th>ESTADO</th><th>DUEÑO</th><th>COMPRA</th><th>OBS</th>
+            </tr>
+        </thead>
+        <tbody>`;
+    
+    inventario.forEach(h => {
+        tabla += `<tr>
+            <td><b>${h.nombre}</b><br>${h.cat}</td>
+            <td>${h.estado}</td>
+            <td>${h.prestado === 'Prestado' ? h.quien : 'SDB'}</td>
+            <td>${h.fechaC || '-'} ($${h.costo})</td>
+            <td>${h.obs}</td>
+        </tr>`;
+    });
+    
+    tabla += `</tbody></table>`;
+    el.innerHTML = tabla;
+    
+    html2pdf().set({
+        margin: 10,
+        filename: `Inventario_SDB_${new Date().toLocaleDateString()}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    }).from(el).save();
+}
+
+render();
+</script>
+</body>
+</html>
