@@ -44,8 +44,8 @@
   .col-nom { width: 200px; font-weight: bold; position: sticky; left: 0; background: #1A1A1A; z-index: 10; border-right: 1px solid var(--borde); }
   .col-est { width: 100px; text-align: center; }
   .col-act { width: 80px; text-align: center; color: #888; }
-  .col-due { width: 120px; }
-  .col-quien { width: 120px; }
+  .col-due { width: 100px; }
+  .col-quien { width: 130px; }
   .col-costo { width: 90px; }
   .col-fecha { width: 100px; }
   .col-obs { width: 250px; font-size: 10px; color: #aaa; }
@@ -104,7 +104,7 @@
     <label>Nombre del Elemento</label>
     <input type="text" id="f-nom" placeholder="Ej: Rotopercutora">
     
-    <label>Categoría (Podés escribir una nueva o elegir de la lista)</label>
+    <label>Categoría (Elegí o escribí una nueva)</label>
     <input type="text" id="f-cat" list="lista-categorias" placeholder="Ej: ELÉCTRICAS">
     <datalist id="lista-categorias">
       <option value="ELÉCTRICAS"></option>
@@ -125,13 +125,16 @@
       </div>
       <div>
         <label>Dueño</label>
-        <input type="text" id="f-due" placeholder="Ej: SDB o Nombre">
+        <select id="f-due" onchange="document.getElementById('sec-quien').style.display = this.value=='Prestado'?'block':'none'">
+          <option value="Comprado">Comprado</option>
+          <option value="Prestado">Prestado</option>
+        </select>
       </div>
     </div>
 
-    <div>
-      <label>Prestador (Opcional si no es propio)</label>
-      <input type="text" id="f-quien" placeholder="¿Quién lo prestó?">
+    <div id="sec-quien" style="display:none">
+      <label>Prestador (Quién lo prestó)</label>
+      <input type="text" id="f-quien" placeholder="Nombre">
     </div>
 
     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px">
@@ -155,14 +158,15 @@
 </div>
 
 <script>
-let db = JSON.parse(localStorage.getItem('sdb_inv_v4')) || [
-    {id:1, nom:"Rotopercutora", cat:"ELÉCTRICAS", est:"Bueno", act:"14/04", due:"Propio SDB", quien:"", costo:"", fcomp:"", obs:""},
-    {id:2, nom:"Martillo demoledor 6 max", cat:"ELÉCTRICAS", est:"Bueno", act:"06/02", due:"Propio SDB", quien:"", costo:"", fcomp:"2026-02-06", obs:"NUEVO"},
-    {id:3, nom:"Amoladora angular nueva", cat:"ELÉCTRICAS", est:"Bueno", act:"14/04", due:"Propio SDB", quien:"", costo:"", fcomp:"", obs:"Makita"},
-    {id:4, nom:"Dobladora Φ12/16/25", cat:"MANUALES", est:"Bueno", act:"14/04", due:"Propio SDB", quien:"", costo:"", fcomp:"", obs:""},
-    {id:5, nom:"Tijera de corte de hierro", cat:"MANUALES", est:"Perdido", act:"14/04", due:"Propio SDB", quien:"", costo:"", fcomp:"", obs:"PERDIDO"},
-    {id:6, nom:"Arnés con cabo (27/01)", cat:"SEGURIDAD", est:"Bueno", act:"14/04", due:"Propio SDB", quien:"", costo:"", fcomp:"", obs:""},
-    {id:7, nom:"Puntales Metálicos (356)", cat:"OBRA/VARIOS", est:"Bueno", act:"14/04", due:"Propio SDB", quien:"", costo:"", fcomp:"", obs:"+35 prestados"}
+// Cambié el nombre de la variable local a 'sdb_inv_v5' para que refresque y borre el viejo "Propio SDB" automáticamente
+let db = JSON.parse(localStorage.getItem('sdb_inv_v5')) || [
+    {id:1, nom:"Rotopercutora", cat:"ELÉCTRICAS", est:"Bueno", act:"14/04", due:"Comprado", quien:"", costo:"", fcomp:"", obs:""},
+    {id:2, nom:"Martillo demoledor 6 max", cat:"ELÉCTRICAS", est:"Bueno", act:"06/02", due:"Comprado", quien:"", costo:"", fcomp:"2026-02-06", obs:"NUEVO"},
+    {id:3, nom:"Amoladora angular nueva", cat:"ELÉCTRICAS", est:"Bueno", act:"14/04", due:"Comprado", quien:"", costo:"", fcomp:"", obs:"Makita"},
+    {id:4, nom:"Dobladora Φ12/16/25", cat:"MANUALES", est:"Bueno", act:"14/04", due:"Comprado", quien:"", costo:"", fcomp:"", obs:""},
+    {id:5, nom:"Tijera de corte de hierro", cat:"MANUALES", est:"Perdido", act:"14/04", due:"Comprado", quien:"", costo:"", fcomp:"", obs:"PERDIDO"},
+    {id:6, nom:"Arnés con cabo (27/01)", cat:"SEGURIDAD", est:"Bueno", act:"14/04", due:"Comprado", quien:"", costo:"", fcomp:"", obs:""},
+    {id:7, nom:"Puntales Metálicos (356)", cat:"OBRA/VARIOS", est:"Bueno", act:"14/04", due:"Comprado", quien:"", costo:"", fcomp:"", obs:"+35 prestados"}
 ];
 
 let idEdit = null;
@@ -171,7 +175,6 @@ function render() {
   const body = document.getElementById('body-tabla');
   body.innerHTML = "";
   
-  // Agrupar por la categoría que hayan escrito
   const categorias = [...new Set(db.map(x => x.cat.toUpperCase()))].sort();
   
   categorias.forEach(cat => {
@@ -201,6 +204,9 @@ function abrirCarga() {
   document.getElementById('modal-tit').innerText = "Cargar Elemento";
   document.getElementById('btn-borrar').style.display = 'none';
   document.querySelectorAll('input, textarea').forEach(i => i.value = "");
+  document.getElementById('f-est').value = "Bueno";
+  document.getElementById('f-due').value = "Comprado";
+  document.getElementById('sec-quien').style.display = 'none';
   document.getElementById('modal-form').style.display = 'flex';
 }
 
@@ -212,12 +218,13 @@ function abrirEdicion(id) {
   document.getElementById('f-nom').value = h.nom;
   document.getElementById('f-cat').value = h.cat;
   document.getElementById('f-est').value = h.est;
-  document.getElementById('f-due').value = h.due;
+  document.getElementById('f-due').value = h.due || "Comprado";
   document.getElementById('f-quien').value = h.quien;
   document.getElementById('f-costo').value = h.costo;
   document.getElementById('f-fcomp').value = h.fcomp;
   document.getElementById('f-obs').value = h.obs;
   
+  document.getElementById('sec-quien').style.display = (h.due === 'Prestado') ? 'block' : 'none';
   document.getElementById('modal-form').style.display = 'flex';
 }
 
@@ -235,6 +242,7 @@ function procesarForm() {
   };
 
   if(!item.nom) return alert("Falta nombre");
+  if(item.due === 'Comprado') item.quien = ""; // Limpia el prestador si se cambia a comprado
 
   if(idEdit) {
     const idx = db.findIndex(x => x.id === idEdit);
@@ -259,7 +267,7 @@ function eliminarItem() {
 }
 
 function cerrarModal() { document.getElementById('modal-form').style.display = 'none'; }
-function guardarLocal() { localStorage.setItem('sdb_inv_v4', JSON.stringify(db)); alert("Datos guardados"); }
+function guardarLocal() { localStorage.setItem('sdb_inv_v5', JSON.stringify(db)); alert("Datos guardados"); }
 
 function exportarPDF() {
   const fActual = new Date();
@@ -285,15 +293,12 @@ function exportarPDF() {
   style.innerHTML = `
     * { color: #000 !important; box-sizing: border-box; }
     
-    /* ACÁ ESTÁ LA CLAVE PARA QUE NO SE CORTE A LA DERECHA */
     table { width: 100% !important; max-width: 100% !important; table-layout: auto !important; margin: 0; border-collapse: collapse; font-size: 10px; border: 1px solid #000 !important; }
     
-    /* Aseguramos bordes para todo */
     th, td { border: 1px solid #000 !important; padding: 6px; color: #000 !important; width: auto !important; }
     
     th { background-color: #e6e6e6 !important; font-weight: bold !important; text-transform: uppercase; }
     
-    /* Mantiene gris la columna nombre y blanco el resto */
     td.col-nom { font-weight: bold !important; background-color: #ffffff !important; }
     
     .separador-cat { background-color: #f2f2f2 !important; color: #000 !important; border: 1px solid #000 !important; text-align: center; font-weight: bold !important; padding: 8px; font-size: 12px; }
