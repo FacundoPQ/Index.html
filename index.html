@@ -57,7 +57,7 @@
   .bueno { background: rgba(61,184,90,0.2); color: var(--verde); border: 1px solid var(--verde); }
   .regular { background: rgba(245,196,0,0.2); color: var(--amarillo); border: 1px solid var(--amarillo); }
   .roto { background: rgba(226,75,74,0.2); color: var(--rojo); border: 1px solid var(--rojo); }
-  .perdido { background: rgba(226,75,74,0.2); color: var(--rojo); border: 1px solid var(--rojo); } /* Ahora perdido también es rojo */
+  .perdido { background: rgba(226,75,74,0.2); color: var(--rojo); border: 1px solid var(--rojo); } 
 
   #fab { position: fixed; bottom: 20px; right: 20px; width: 55px; height: 55px; background: var(--amarillo); border-radius: 50%; display: flex; justify-content: center; align-items: center; border: none; box-shadow: 0 4px 15px rgba(0,0,0,0.6); font-size: 28px; z-index: 100; }
 
@@ -270,7 +270,7 @@ function exportarPDF() {
   const horaStr = fActual.toLocaleTimeString('es-AR', {hour: '2-digit', minute:'2-digit'});
 
   const el = document.createElement('div');
-  el.style.padding = "20px";
+  // Se quitó el padding para que el ancho no desborde y no corte la línea derecha
   el.style.fontFamily = "Arial, sans-serif";
   el.style.backgroundColor = "#ffffff";
   
@@ -287,16 +287,19 @@ function exportarPDF() {
   
   const style = document.createElement('style');
   style.innerHTML = `
-    * { color: #000 !important; }
-    table { width: 100%; border-collapse: collapse; font-size: 10px; }
+    * { color: #000 !important; box-sizing: border-box; }
+    /* Se ajustó a 99% y se forzó el borde de la tabla para que siempre cierre a la derecha */
+    table { width: 99%; margin: 0 auto; border-collapse: collapse; font-size: 10px; border: 1px solid #333 !important; }
+    
     th { background-color: #e6e6e6 !important; color: #000 !important; border: 1px solid #333 !important; padding: 6px; font-weight: bold !important; text-transform: uppercase; }
     td { background-color: #ffffff !important; border: 1px solid #333 !important; padding: 6px; color: #000 !important; }
     
-    .col-nom { font-weight: bold !important; background-color: #ffffff !important; }
+    /* AHORA SOLO AFECTA A LAS CELDAS DE LA LISTA Y NO AL ENCABEZADO "HERRAMIENTA" */
+    td.col-nom { font-weight: bold !important; background-color: #ffffff !important; }
+    
     .separador-cat { background-color: #f2f2f2 !important; color: #000 !important; border: 1px solid #333 !important; text-align: center; font-weight: bold !important; padding: 8px; font-size: 12px; }
     
-    /* ESTILOS DE COLORES CLARITOS PARA LOS ESTADOS EN EL PDF */
-    .badge { padding: 4px 6px !important; border-radius: 4px !important; font-weight: bold !important; display: block; border: 1px solid #ccc !important; }
+    .badge { padding: 4px 6px !important; border-radius: 4px !important; font-weight: bold !important; display: block; border: 1px solid #ccc !important; text-align: center; }
     .bueno { background-color: #d4edda !important; color: #000 !important; border-color: #c3e6cb !important; }
     .regular { background-color: #fff3cd !important; color: #000 !important; border-color: #ffeeba !important; }
     .roto { background-color: #f8d7da !important; color: #000 !important; border-color: #f5c6cb !important; }
