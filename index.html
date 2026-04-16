@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>SDB — Inventario de Herramientas</title>
+<title>SDB — Inventario Profesional</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
 <style>
@@ -12,283 +12,273 @@
   html, body { background: var(--fondo); color: var(--texto); font-family: -apple-system, sans-serif; height: 100%; width: 100%; margin: 0; padding: 0; overflow: hidden; position: fixed; }
 
   #header-fijo { position: absolute; top: 0; left: 0; right: 0; background: var(--sup); z-index: 100; border-bottom: 2px solid var(--amarillo); padding-bottom: 5px; }
-  .controles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; padding: 8px 6px; }
+  .controles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; padding: 8px 6px; }
   
-  .btn-acc { border: none; padding: 12px 0; border-radius: 4px; font-size: 10px; font-weight: 900; text-transform: uppercase; cursor: pointer; text-align: center; color: white; }
+  .btn-acc { border: none; padding: 10px 0; border-radius: 4px; font-size: 8px; font-weight: 900; text-transform: uppercase; cursor: pointer; text-align: center; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   
   .btn-web { background: var(--amarillo); color: #1A1A1A; }
   .btn-pdf-dia { background: var(--gris); }
-  .btn-excel { background: var(--verde); }
+  .btn-pdf-sem { background: var(--azul); }
+  .btn-pdf-mes { background: var(--naranja); }
   
-  .nav-herramientas { display: flex; align-items: center; padding: 0 15px; background: #2E2E2E; justify-content: space-between; height: 45px; border-top: 1px solid var(--borde); }
-  .tit-periodo { font-size: 14px; font-weight: bold; color: var(--amarillo); }
+  .nav-sem { display: flex; align-items: center; padding: 0 15px; background: #2E2E2E; justify-content: space-between; height: 35px; border-top: 1px solid var(--borde); }
+  .tit-periodo { font-size: 11px; font-weight: bold; color: var(--amarillo); }
 
-  .grid-header { display: grid; grid-template-columns: 1fr 80px 80px; background: var(--sup); border-top: 1px solid var(--borde); }
-  .d-col { text-align: center; padding: 10px 0; font-size: 11px; font-weight: 700; color: #888; border-left: 1px solid #2a2a2a; }
+  .grid-header { display: grid; grid-template-columns: 1.2fr 0.8fr 0.8fr; background: var(--sup); border-top: 1px solid var(--borde); }
+  .d-col { text-align: center; padding: 6px 0; font-size: 9px; font-weight: 700; color: #888; border-left: 1px solid #2a2a2a; }
 
-  #scroll-area { position: absolute; top: 145px; bottom: 0; left: 0; right: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-bottom: 80px; }
-  .fila { display: grid; grid-template-columns: 1fr 80px 80px; border-bottom: 1px solid var(--borde); align-items: center; min-height: 55px; background: var(--fondo); }
-  .nom { font-size: 12px; font-weight: 600; padding-left: 12px; color: #eee; line-height: 1.2; }
-  .sub-info { font-size: 9px; color: #888; display: block; }
+  #scroll-area { position: absolute; top: 115px; bottom: 0; left: 0; right: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-bottom: 80px; }
+  .fila { display: grid; grid-template-columns: 1.2fr 0.8fr 0.8fr; border-bottom: 1px solid var(--borde); align-items: center; min-height: 52px; background: var(--fondo); }
+  .nom { font-size: 10px; font-weight: 600; padding-left: 8px; color: #eee; line-height: 1.2; }
+  .sub-info { font-size: 8px; color: #666; display: block; }
   
-  .btn-est { width: 65px; height: 32px; border-radius: 5px; border: none; background: #2E2E2E; color: #ccc; font-size: 9px; font-weight: bold; margin: auto; }
+  .btn-est { width: 90%; height: 32px; border-radius: 5px; border: none; background: #2E2E2E; color: #ccc; font-size: 9px; font-weight: bold; margin: auto; display: flex; align-items: center; justify-content: center; }
   .btn-est.bueno { background: rgba(61,184,90,0.2); color: var(--verde); border: 1px solid var(--verde); }
   .btn-est.roto { background: rgba(226,75,74,0.2); color: var(--rojo); border: 1px solid var(--rojo); }
 
-  #fab { position: fixed; bottom: 25px; right: 20px; width: 60px; height: 60px; background: var(--amarillo); border-radius: 50%; display: flex; justify-content: center; align-items: center; z-index: 150; border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.6); font-size: 30px; font-weight: bold; }
+  #fab { position: fixed; bottom: 25px; right: 20px; width: 55px; height: 55px; background: var(--amarillo); border-radius: 50%; display: flex; justify-content: center; align-items: center; z-index: 150; border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.6); font-size: 24px; font-weight: bold; }
 
-  .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 2000; flex-direction: column; }
-  .overlay-content { background: var(--sup); width: 90%; max-width: 450px; padding: 20px; border-radius: 15px; border: 1px solid var(--borde); margin: auto; overflow-y: auto; max-height: 80vh; }
+  .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 2000; flex-direction: column; justify-content: center; align-items: center; }
+  .overlay-content { background: var(--sup); width: 90%; max-width: 400px; padding: 20px; border-radius: 15px; border: 1px solid var(--borde); overflow-y: auto; max-height: 85vh; }
 
-  input, select, textarea { background: #111; border: 1px solid var(--borde); color: white; padding: 12px; border-radius: 6px; width: 100%; font-size: 14px; margin: 8px 0; box-sizing: border-box; }
-  label { font-size: 11px; color: var(--amarillo); text-transform: uppercase; font-weight: bold; }
+  input, select, textarea { background: #111; border: 1px solid var(--borde); color: white; padding: 10px; border-radius: 6px; width: 100%; font-size: 14px; margin: 5px 0 12px 0; box-sizing: border-box; }
+  label { font-size: 10px; color: var(--amarillo); text-transform: uppercase; font-weight: bold; display: block; margin-top: 5px; }
+  
+  table { width: 100%; border-collapse: collapse; font-size: 10px; margin-top: 10px; }
+  th { background: #eee; color: #000; padding: 5px; }
+  td { border: 1px solid #000; padding: 5px; color: #000; }
 </style>
 </head>
 <body>
 
 <div id="header-fijo">
   <div class="controles">
-    <button class="btn-acc btn-web" onclick="guardarDatos()">Guardar Datos</button>
-    <button class="btn-acc btn-pdf-dia" onclick="exportarPDF()">Exportar PDF</button>
-    <button class="btn-acc btn-excel" onclick="alert('Funcionalidad Excel: Próximamente')">Excel</button>
+    <button class="btn-acc btn-web" onclick="guardarDatos()">Guardar</button>
+    <button class="btn-acc btn-pdf-dia" onclick="generarPDF('diario')">Diario</button>
+    <button class="btn-acc btn-pdf-sem" onclick="generarPDF('semanal')">Semanal</button>
+    <button class="btn-acc btn-pdf-mes" onclick="generarPDF('mensual')">Mensual</button>
   </div>
-  <div class="nav-herramientas">
-    <div class="tit-periodo">INVENTARIO SDB-1165</div>
-    <div style="font-size: 10px;" id="fecha-actual"></div>
+  <div class="nav-sem">
+    <div class="tit-periodo">SDB-1165 | CONTROL DE INVENTARIO</div>
+    <div id="fecha-label" style="color:white; font-size:10px;"></div>
   </div>
   <div class="grid-header">
-    <div class="d-col">HERRAMIENTA</div>
+    <div class="d-col">HERRAMIENTA / CAT</div>
     <div class="d-col">ESTADO</div>
-    <div class="d-col">DETALLE</div>
+    <div class="d-col">ACTUALIZ.</div>
   </div>
 </div>
 
 <div id="scroll-area">
-  <div id="lista-herramientas"></div>
+  <div id="lista-inventario"></div>
 </div>
 
-<button id="fab" onclick="abrirModalNuevo()">+</button>
+<button id="fab" onclick="abrirNuevo()">+</button>
 
-<div class="overlay" id="modal-detalle">
+<div class="overlay" id="modal-edicion">
   <div class="overlay-content">
-    <h3 id="mod-titulo" style="color:var(--amarillo); margin:0 0 15px 0;"></h3>
+    <h3 id="ed-titulo" style="color:var(--amarillo); margin:0 0 10px 0;">Editar Herramienta</h3>
     
-    <label>Estado Actual</label>
-    <select id="mod-estado">
-        <option value="Bueno">Bueno / Nuevo</option>
-        <option value="Regular">Uso Regular</option>
-        <option value="Roto">Roto / Reparación</option>
+    <label>1. Estado</label>
+    <select id="ed-estado">
+        <option value="Bueno">Bueno</option>
+        <option value="Regular">Regular</option>
+        <option value="Roto">Roto</option>
         <option value="Perdido">Perdido</option>
     </select>
 
-    <label>Prestado / Dueño</label>
-    <select id="mod-prestado" onchange="togglePrestador()">
-        <option value="Propio">Propio SDB</option>
+    <label>2. Última Actualización</label>
+    <input type="text" id="ed-act" readonly style="color:#666">
+
+    <label>3. Prestado / Dueño</label>
+    <select id="ed-dueno" onchange="togglePrestado()">
+        <option value="Propio SDB">Propio SDB</option>
         <option value="Prestado">Prestado</option>
     </select>
 
-    <div id="sec-prestador" style="display:none">
-        <label>¿Quién lo prestó?</label>
-        <input type="text" id="mod-quien" placeholder="Nombre de la persona u obra">
+    <div id="capa-prestado" style="display:none">
+        <label>4. Quién lo prestó</label>
+        <input type="text" id="ed-quien" placeholder="Nombre del dueño">
     </div>
 
-    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px">
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px">
         <div>
-            <label>Costo Compra</label>
-            <input type="number" id="mod-costo" placeholder="$">
+            <label>5. Costo Compra</label>
+            <input type="number" id="ed-costo" placeholder="$">
         </div>
         <div>
-            <label>Fecha Compra</label>
-            <input type="date" id="mod-fecha">
+            <label>6. Fecha Compra</label>
+            <input type="date" id="ed-fecha-c">
         </div>
     </div>
 
-    <label>Comentarios / Observaciones</label>
-    <textarea id="mod-obs" rows="3" placeholder="Ej: Marca, medidas, falla detectada..."></textarea>
+    <label>7. Comentarios</label>
+    <textarea id="ed-obs" rows="2" placeholder="Detalles técnicos, marca, etc."></textarea>
 
-    <button class="btn-acc" style="background:var(--verde); width:100%; padding:15px; margin-top:10px" onclick="guardarCambios()">ACTUALIZAR DATOS</button>
-    <button class="btn-acc" style="background:var(--rojo); width:100%; padding:10px; margin-top:10px; font-size:9px" onclick="eliminarHerramienta()">ELIMINAR DEL REGISTRO</button>
-    <button onclick="cerrarModales()" style="width:100%; background:none; border:none; color:#888; margin-top:15px">CANCELAR</button>
+    <button class="btn-acc" style="background:var(--verde); width:100%; padding:12px; margin-top:10px" onclick="aplicarCambios()">GUARDAR CAMBIOS</button>
+    <button class="btn-acc" style="background:var(--rojo); width:100%; padding:8px; margin-top:8px; font-size:8px" onclick="eliminarHerramienta()">ELIMINAR</button>
+    <button onclick="cerrarModales()" style="width:100%; background:none; border:none; color:#888; margin-top:10px">CANCELAR</button>
   </div>
 </div>
 
 <div class="overlay" id="modal-nuevo">
     <div class="overlay-content">
-      <h3 style="color:var(--amarillo); margin-top:0;">Agregar Herramienta</h3>
-      <label>Nombre del Elemento</label>
-      <input type="text" id="new-nombre" placeholder="Ej: Amoladora 9' Milwaukee">
+      <h3 style="color:var(--amarillo); margin:0 0 15px 0;">Nueva Herramienta</h3>
+      <label>Nombre</label>
+      <input type="text" id="new-nom" placeholder="Ej: Rotopercutora">
       <label>Categoría</label>
       <select id="new-cat">
           <option value="Eléctrica">Eléctrica</option>
-          <option value="Manual">Manual / Herramienta de Mano</option>
-          <option value="Seguridad">Seguridad / Arneses</option>
-          <option value="Varios">Varios (Baldes, puntales, etc)</option>
+          <option value="Manual">Manual</option>
+          <option value="Seguridad">Seguridad</option>
+          <option value="Varios">Varios</option>
       </select>
-      <button class="btn-acc" style="background:var(--amarillo); color:black; width:100%; padding:15px; margin-top:10px" onclick="crearHerramienta()">CARGAR AL INVENTARIO</button>
-      <button onclick="cerrarModales()" style="width:100%; background:none; border:none; color:#888; margin-top:15px">VOLVER</button>
+      <button class="btn-acc" style="background:var(--amarillo); color:black; width:100%; padding:15px;" onclick="crearItem()">AGREGAR</button>
+      <button onclick="cerrarModales()" style="width:100%; background:none; border:none; color:#888; margin-top:15px">CANCELAR</button>
     </div>
 </div>
 
 <script>
-// Datos importados del registro SDB al 14 de Abril
-let inventario = JSON.parse(localStorage.getItem('sdb_herramientas_v1')) || [
-    {id: 1, nombre: "Rotopercutora", estado: "Bueno", fechaAct: "14/04", prestado: "Propio", quien: "", costo: 0, fechaC: "", obs: "", cat: "Eléctrica"},
-    {id: 2, nombre: "Dobladora", estado: "Bueno", fechaAct: "14/04", prestado: "Propio", quien: "", costo: 0, fechaC: "", obs: "", cat: "Manual"},
-    {id: 3, nombre: "Amoladora angular nueva", estado: "Bueno", fechaAct: "14/04", prestado: "Propio", quien: "", costo: 0, fechaC: "", obs: "Makita", cat: "Eléctrica"},
-    {id: 4, nombre: "Amoladora rota", estado: "Roto", fechaAct: "14/04", prestado: "Propio", quien: "", costo: 0, fechaC: "", obs: "", cat: "Eléctrica"},
-    {id: 5, nombre: "Sierra Makita nueva", estado: "Bueno", fechaAct: "14/04", prestado: "Propio", quien: "", costo: 0, fechaC: "", obs: "7 pulgadas", cat: "Eléctrica"},
-    {id: 6, nombre: "Martillo demoledor SDS MAX", estado: "Bueno", fechaAct: "06/02", prestado: "Propio", quien: "", costo: 0, fechaC: "2026-02-06", obs: "NUEVO", cat: "Eléctrica"},
-    {id: 7, nombre: "Martillo demoledor hexagonal", estado: "Bueno", fechaAct: "14/04", prestado: "Propio", quien: "", costo: 0, fechaC: "", obs: "Grande / Nuevo", cat: "Eléctrica"},
-    {id: 8, nombre: "Arnés x2", estado: "Bueno", fechaAct: "14/04", prestado: "Propio", quien: "", costo: 0, fechaC: "", obs: "Con gancho", cat: "Seguridad"},
-    {id: 9, nombre: "Tijera de corte de hierro", estado: "Perdido", fechaAct: "14/04", prestado: "Propio", quien: "", costo: 0, fechaC: "", obs: "Reportado perdido", cat: "Manual"},
-    {id: 10, nombre: "Puntales metálicos (356)", estado: "Bueno", fechaAct: "14/04", prestado: "Propio", quien: "", costo: 0, fechaC: "", obs: "Más 35 prestados", cat: "Varios"},
-    {id: 11, nombre: "Vibrador con tripa", estado: "Bueno", fechaAct: "14/04", prestado: "Propio", quien: "", costo: 0, fechaC: "", obs: "", cat: "Eléctrica"}
+// Base de datos precargada del PDF [cite: 3, 8, 22, 36]
+let herramientas = JSON.parse(localStorage.getItem('sdb_inv_pro')) || [
+    {id: 1, nom: "Rotopercutora", cat: "Eléctrica", est: "Bueno", act: "14/04/26", dueno: "Propio SDB", quien: "", costo: "", fechaC: "", obs: ""},
+    {id: 2, nom: "Dobladora Φ12/16/25", cat: "Manual", est: "Bueno", act: "14/04/26", dueno: "Propio SDB", quien: "", costo: "", fechaC: "", obs: ""},
+    {id: 3, nom: "Amoladora angular nueva", cat: "Eléctrica", est: "Bueno", act: "14/04/26", dueno: "Propio SDB", quien: "", costo: "", fechaC: "", obs: "Makita"},
+    {id: 4, nom: "Martillo demoledor 6 max", cat: "Eléctrica", est: "Bueno", act: "06/02/26", dueno: "Propio SDB", quien: "", costo: "", fechaC: "2026-02-06", obs: "NUEVO"},
+    {id: 5, nom: "Puntales Metálicos (356)", cat: "Varios", est: "Bueno", act: "14/04/26", dueno: "Propio SDB", quien: "", costo: "", fechaC: "", obs: "+35 prestados"},
+    {id: 6, nom: "Tijera corte hierro", cat: "Manual", est: "Perdido", act: "14/04/26", dueno: "Propio SDB", quien: "", costo: "", fechaC: "", obs: "PERDIDO EN OBRA"}
 ];
 
 let editId = null;
 
 function render() {
-    const lista = document.getElementById('lista-herramientas');
-    document.getElementById('fecha-actual').textContent = new Date().toLocaleDateString('es-AR');
+    const lista = document.getElementById('lista-inventario');
+    document.getElementById('fecha-label').textContent = new Date().toLocaleDateString();
     
-    lista.innerHTML = inventario.map(h => `
-        <div class="fila">
+    lista.innerHTML = herramientas.map(h => `
+        <div class="fila" onclick="abrirEdicion(${h.id})">
             <div class="nom">
-                ${h.nombre}
-                <span class="sub-info">${h.cat} | Act: ${h.fechaAct}</span>
+                ${h.nom}
+                <span class="sub-info">${h.cat}</span>
             </div>
             <div style="text-align:center">
-                <button class="btn-est ${h.estado === 'Bueno' ? 'bueno' : (h.estado === 'Roto' ? 'roto' : '')}" 
-                        onclick="abrirDetalle(${h.id})">
-                    ${h.estado.toUpperCase()}
-                </button>
+                <div class="btn-est ${h.est === 'Bueno' ? 'bueno' : (h.est === 'Roto' ? 'roto' : '')}">
+                    ${h.est.toUpperCase()}
+                </div>
             </div>
-            <div style="text-align:center">
-                <button class="btn-est" style="width:40px" onclick="abrirDetalle(${h.id})">✏️</button>
+            <div style="text-align:center; font-size:9px; color:#888;">
+                ${h.act}
             </div>
         </div>
     `).join('');
 }
 
-function abrirDetalle(id) {
+function abrirEdicion(id) {
     editId = id;
-    const h = inventario.find(x => x.id === id);
-    document.getElementById('mod-titulo').textContent = h.nombre;
-    document.getElementById('mod-estado').value = h.estado;
-    document.getElementById('mod-prestado').value = h.prestado;
-    document.getElementById('mod-quien').value = h.quien;
-    document.getElementById('mod-costo').value = h.costo;
-    document.getElementById('mod-fecha').value = h.fechaC;
-    document.getElementById('mod-obs').value = h.obs;
+    const h = herramientas.find(x => x.id === id);
+    document.getElementById('ed-titulo').textContent = h.nom;
+    document.getElementById('ed-estado').value = h.est;
+    document.getElementById('ed-act').value = h.act;
+    document.getElementById('ed-dueno').value = h.dueno;
+    document.getElementById('ed-quien').value = h.quien;
+    document.getElementById('ed-costo').value = h.costo;
+    document.getElementById('ed-fecha-c').value = h.fechaC;
+    document.getElementById('ed-obs').value = h.obs;
     
-    togglePrestador();
-    document.getElementById('modal-detalle').style.display = 'flex';
+    togglePrestado();
+    document.getElementById('modal-edicion').style.display = 'flex';
 }
 
-function togglePrestador() {
-    const v = document.getElementById('mod-prestado').value;
-    document.getElementById('sec-prestador').style.display = (v === 'Prestado') ? 'block' : 'none';
+function togglePrestado() {
+    const p = document.getElementById('ed-dueno').value;
+    document.getElementById('capa-prestado').style.display = (p === 'Prestado') ? 'block' : 'none';
 }
 
-function guardarCambios() {
-    const idx = inventario.findIndex(x => x.id === editId);
-    inventario[idx].estado = document.getElementById('mod-estado').value;
-    inventario[idx].prestado = document.getElementById('mod-prestado').value;
-    inventario[idx].quien = document.getElementById('mod-quien').value;
-    inventario[idx].costo = document.getElementById('mod-costo').value;
-    inventario[idx].fechaC = document.getElementById('mod-fecha').value;
-    inventario[idx].obs = document.getElementById('mod-obs').value;
-    inventario[idx].fechaAct = new Date().toLocaleDateString('es-AR', {day:'2-digit', month:'2-digit'});
+function aplicarCambios() {
+    const i = herramientas.findIndex(x => x.id === editId);
+    herramientas[i].est = document.getElementById('ed-estado').value;
+    herramientas[i].dueno = document.getElementById('ed-dueno').value;
+    herramientas[i].quien = document.getElementById('ed-quien').value;
+    herramientas[i].costo = document.getElementById('ed-costo').value;
+    herramientas[i].fechaC = document.getElementById('ed-fecha-c').value;
+    herramientas[i].obs = document.getElementById('ed-obs').value;
+    herramientas[i].act = new Date().toLocaleDateString('es-AR', {day:'2-digit', month:'2-digit', year:'2-digit'});
     
     guardarDatos();
     cerrarModales();
     render();
 }
 
-function abrirModalNuevo() {
-    document.getElementById('modal-nuevo').style.display = 'flex';
-}
+function abrirNuevo() { document.getElementById('modal-nuevo').style.display = 'flex'; }
 
-function crearHerramienta() {
-    const nom = document.getElementById('new-nombre').value;
-    if(!nom) return alert("Ingrese el nombre de la herramienta");
-    
-    const nueva = {
+function crearItem() {
+    const nom = document.getElementById('new-nom').value;
+    if(!nom) return;
+    herramientas.push({
         id: Date.now(),
-        nombre: nom,
-        estado: "Bueno",
-        fechaAct: new Date().toLocaleDateString('es-AR', {day:'2-digit', month:'2-digit'}),
-        prestado: "Propio",
-        quien: "",
-        costo: 0,
-        fechaC: "",
-        obs: "",
-        cat: document.getElementById('new-cat').value
-    };
-    
-    inventario.push(nueva);
+        nom: nom,
+        cat: document.getElementById('new-cat').value,
+        est: "Bueno",
+        act: new Date().toLocaleDateString('es-AR', {day:'2-digit', month:'2-digit', year:'2-digit'}),
+        dueno: "Propio SDB", quien: "", costo: "", fechaC: "", obs: ""
+    });
+    document.getElementById('new-nom').value = "";
     guardarDatos();
-    document.getElementById('new-nombre').value = "";
     cerrarModales();
     render();
 }
 
 function eliminarHerramienta() {
-    if(confirm("¿Seguro desea eliminar este elemento?")) {
-        inventario = inventario.filter(x => x.id !== editId);
+    if(confirm("¿Eliminar herramienta?")) {
+        herramientas = herramientas.filter(x => x.id !== editId);
         guardarDatos();
         cerrarModales();
         render();
     }
 }
 
-function cerrarModales() {
-    document.querySelectorAll('.overlay').forEach(o => o.style.display = 'none');
-}
+function cerrarModales() { document.querySelectorAll('.overlay').forEach(o => o.style.display = 'none'); }
 
 function guardarDatos() {
-    localStorage.setItem('sdb_herramientas_v1', JSON.stringify(inventario));
+    localStorage.setItem('sdb_inv_pro', JSON.stringify(herramientas));
+    alert("Sincronizado con éxito.");
 }
 
-function exportarPDF() {
+function generarPDF(tipo) {
+    const fStr = new Date().toLocaleDateString();
     const el = document.createElement('div');
-    el.style.padding = "20px";
+    el.style.padding = "30px";
     el.style.color = "#000";
     el.style.fontFamily = "Arial";
     
-    let tabla = `<h2>SDB - REPORTE DE INVENTARIO</h2>
-    <p>Fecha de reporte: ${new Date().toLocaleDateString()}</p>
-    <table border="1" style="width:100%; border-collapse:collapse; font-size:10px">
-        <thead>
-            <tr style="background:#eee">
-                <th style="padding:5px">ELEMENTO</th>
-                <th style="padding:5px">ESTADO</th>
-                <th style="padding:5px">DUEÑO</th>
-                <th style="padding:5px">INFO COMPRA</th>
-                <th style="padding:5px">OBSERVACIONES</th>
-            </tr>
-        </thead>
-        <tbody>`;
+    let html = `<h1>SDB - REPORTE ${tipo.toUpperCase()}</h1>
+                <p><b>FECHA DE EMISIÓN:</b> ${fStr}</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>HERRAMIENTA</th><th>ESTADO</th><th>DUEÑO</th><th>COSTO</th><th>OBS</th><th>ACT.</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
     
-    inventario.forEach(h => {
-        tabla += `<tr>
-            <td style="padding:5px"><b>${h.nombre}</b><br>${h.cat}</td>
-            <td style="padding:5px; text-align:center">${h.estado}</td>
-            <td style="padding:5px">${h.prestado === 'Prestado' ? h.quien : 'Propio SDB'}</td>
-            <td style="padding:5px">${h.fechaC || '-'} ($${h.costo})</td>
-            <td style="padding:5px">${h.obs}</td>
+    herramientas.forEach(h => {
+        html += `<tr>
+            <td><b>${h.nom}</b><br><small>${h.cat}</small></td>
+            <td>${h.est}</td>
+            <td>${h.dueno === 'Prestado' ? h.quien : 'SDB'}</td>
+            <td>$${h.costo || '0'}</td>
+            <td>${h.obs}</td>
+            <td>${h.act}</td>
         </tr>`;
     });
     
-    tabla += `</tbody></table>`;
-    el.innerHTML = tabla;
+    html += `</tbody></table>`;
+    el.innerHTML = html;
     
     html2pdf().set({
         margin: 10,
-        filename: `Inventario_SDB_${new Date().toISOString().slice(0,10)}.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2 },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        filename: `SDB_Reporte_${tipo}_${fStr}.pdf`,
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
     }).from(el).save();
 }
 
