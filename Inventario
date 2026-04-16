@@ -40,10 +40,6 @@
   .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 2000; flex-direction: column; }
   .overlay-content { background: var(--sup); width: 90%; max-width: 450px; padding: 20px; border-radius: 15px; border: 1px solid var(--borde); margin: auto; overflow-y: auto; max-height: 80vh; }
 
-  .tabs-header { display: grid; grid-template-columns: repeat(2, 1fr); background: var(--sup); padding: 10px; gap: 4px; width: 100%; border-bottom: 1px solid var(--borde); box-sizing: border-box; }
-  .tab-btn { padding: 12px 0; border: none; border-radius: 6px; background: #333; color: #888; font-size: 10px; font-weight: 800; text-transform: uppercase; }
-  .tab-btn.active { background: var(--amarillo); color: #1A1A1A; }
-  
   input, select, textarea { background: #111; border: 1px solid var(--borde); color: white; padding: 12px; border-radius: 6px; width: 100%; font-size: 14px; margin: 8px 0; box-sizing: border-box; }
   label { font-size: 11px; color: var(--amarillo); text-transform: uppercase; font-weight: bold; }
 </style>
@@ -52,7 +48,7 @@
 
 <div id="header-fijo">
   <div class="controles">
-    <button class="btn-acc btn-web" onclick="guardarDatos()">Guardar</button>
+    <button class="btn-acc btn-web" onclick="guardarDatos()">Guardar Datos</button>
     <button class="btn-acc btn-pdf-dia" onclick="exportarPDF()">Exportar PDF</button>
     <button class="btn-acc btn-excel" onclick="alert('Funcionalidad Excel: Próximamente')">Excel</button>
   </div>
@@ -63,7 +59,7 @@
   <div class="grid-header">
     <div class="d-col">HERRAMIENTA</div>
     <div class="d-col">ESTADO</div>
-    <div class="d-col">INFO</div>
+    <div class="d-col">DETALLE</div>
   </div>
 </div>
 
@@ -75,11 +71,11 @@
 
 <div class="overlay" id="modal-detalle">
   <div class="overlay-content">
-    <h3 id="mod-titulo" style="color:var(--amarillo); margin:0 0 15px 0;">Detalle de Herramienta</h3>
+    <h3 id="mod-titulo" style="color:var(--amarillo); margin:0 0 15px 0;"></h3>
     
-    <label>Estado</label>
+    <label>Estado Actual</label>
     <select id="mod-estado">
-        <option value="Bueno">Excelente / Nuevo</option>
+        <option value="Bueno">Bueno / Nuevo</option>
         <option value="Regular">Uso Regular</option>
         <option value="Roto">Roto / Reparación</option>
         <option value="Perdido">Perdido</option>
@@ -93,7 +89,7 @@
 
     <div id="sec-prestador" style="display:none">
         <label>¿Quién lo prestó?</label>
-        <input type="text" id="mod-quien" placeholder="Nombre del dueño">
+        <input type="text" id="mod-quien" placeholder="Nombre de la persona u obra">
     </div>
 
     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px">
@@ -107,48 +103,53 @@
         </div>
     </div>
 
-    <label>Comentarios / Especificaciones</label>
-    <textarea id="mod-obs" rows="3" placeholder="Ej: Medidas, marca, ubicación..."></textarea>
+    <label>Comentarios / Observaciones</label>
+    <textarea id="mod-obs" rows="3" placeholder="Ej: Marca, medidas, falla detectada..."></textarea>
 
     <button class="btn-acc" style="background:var(--verde); width:100%; padding:15px; margin-top:10px" onclick="guardarCambios()">ACTUALIZAR DATOS</button>
-    <button class="btn-acc" style="background:var(--rojo); width:100%; padding:10px; margin-top:10px; font-size:9px" onclick="eliminarHerramienta()">ELIMINAR HERRAMIENTA</button>
-    <button onclick="cerrarModales()" style="width:100%; background:none; border:none; color:#888; margin-top:15px">CERRAR</button>
+    <button class="btn-acc" style="background:var(--rojo); width:100%; padding:10px; margin-top:10px; font-size:9px" onclick="eliminarHerramienta()">ELIMINAR DEL REGISTRO</button>
+    <button onclick="cerrarModales()" style="width:100%; background:none; border:none; color:#888; margin-top:15px">CANCELAR</button>
   </div>
 </div>
 
 <div class="overlay" id="modal-nuevo">
     <div class="overlay-content">
-      <h3 style="color:var(--amarillo); margin-top:0;">Nueva Herramienta</h3>
-      <label>Nombre de la Herramienta</label>
-      <input type="text" id="new-nombre" placeholder="Ej: Rotopercutora Bosch">
+      <h3 style="color:var(--amarillo); margin-top:0;">Agregar Herramienta</h3>
+      <label>Nombre del Elemento</label>
+      <input type="text" id="new-nombre" placeholder="Ej: Amoladora 9' Milwaukee">
       <label>Categoría</label>
       <select id="new-cat">
           <option value="Eléctrica">Eléctrica</option>
-          <option value="Manual">Manual</option>
+          <option value="Manual">Manual / Herramienta de Mano</option>
           <option value="Seguridad">Seguridad / Arneses</option>
-          <option value="Varios">Varios (Baldes, palas, etc)</option>
+          <option value="Varios">Varios (Baldes, puntales, etc)</option>
       </select>
-      <button class="btn-acc" style="background:var(--amarillo); color:black; width:100%; padding:15px; margin-top:10px" onclick="crearHerramienta()">AGREGAR AL INVENTARIO</button>
-      <button onclick="cerrarModales()" style="width:100%; background:none; border:none; color:#888; margin-top:15px">CANCELAR</button>
+      <button class="btn-acc" style="background:var(--amarillo); color:black; width:100%; padding:15px; margin-top:10px" onclick="crearHerramienta()">CARGAR AL INVENTARIO</button>
+      <button onclick="cerrarModales()" style="width:100%; background:none; border:none; color:#888; margin-top:15px">VOLVER</button>
     </div>
 </div>
 
 <script>
-// Datos iniciales basados en tu PDF
-let inventario = JSON.parse(localStorage.getItem('sdb_inv_v2')) || [
+// Datos importados del registro SDB al 14 de Abril
+let inventario = JSON.parse(localStorage.getItem('sdb_herramientas_v1')) || [
     {id: 1, nombre: "Rotopercutora", estado: "Bueno", fechaAct: "14/04", prestado: "Propio", quien: "", costo: 0, fechaC: "", obs: "", cat: "Eléctrica"},
-    {id: 2, nombre: "Dobladora Φ12/16/25", estado: "Bueno", fechaAct: "14/04", prestado: "Propio", quien: "", costo: 0, fechaC: "", obs: "", cat: "Manual"},
-    {id: 3, nombre: "Amoladora Angular (Nueva)", estado: "Bueno", fechaAct: "14/04", prestado: "Propio", quien: "", costo: 0, fechaC: "", obs: "Makita", cat: "Eléctrica"},
-    {id: 4, nombre: "Tijera de corte de hierro", estado: "Perdido", fechaAct: "14/04", prestado: "Propio", quien: "", costo: 0, fechaC: "", obs: "Marcado como perdido en PDF", cat: "Manual"},
-    {id: 5, nombre: "Martillo Demoledor 6 Max (Nuevo)", estado: "Bueno", fechaAct: "06/02", prestado: "Propio", quien: "", costo: 0, fechaC: "2026-02-06", obs: "SDS MAX", cat: "Eléctrica"},
-    {id: 6, nombre: "Puntales Metálicos (x356)", estado: "Bueno", fechaAct: "14/04", prestado: "Propio", quien: "", costo: 0, fechaC: "", obs: "356 propios + 35 prestados", cat: "Varios"}
+    {id: 2, nombre: "Dobladora", estado: "Bueno", fechaAct: "14/04", prestado: "Propio", quien: "", costo: 0, fechaC: "", obs: "", cat: "Manual"},
+    {id: 3, nombre: "Amoladora angular nueva", estado: "Bueno", fechaAct: "14/04", prestado: "Propio", quien: "", costo: 0, fechaC: "", obs: "Makita", cat: "Eléctrica"},
+    {id: 4, nombre: "Amoladora rota", estado: "Roto", fechaAct: "14/04", prestado: "Propio", quien: "", costo: 0, fechaC: "", obs: "", cat: "Eléctrica"},
+    {id: 5, nombre: "Sierra Makita nueva", estado: "Bueno", fechaAct: "14/04", prestado: "Propio", quien: "", costo: 0, fechaC: "", obs: "7 pulgadas", cat: "Eléctrica"},
+    {id: 6, nombre: "Martillo demoledor SDS MAX", estado: "Bueno", fechaAct: "06/02", prestado: "Propio", quien: "", costo: 0, fechaC: "2026-02-06", obs: "NUEVO", cat: "Eléctrica"},
+    {id: 7, nombre: "Martillo demoledor hexagonal", estado: "Bueno", fechaAct: "14/04", prestado: "Propio", quien: "", costo: 0, fechaC: "", obs: "Grande / Nuevo", cat: "Eléctrica"},
+    {id: 8, nombre: "Arnés x2", estado: "Bueno", fechaAct: "14/04", prestado: "Propio", quien: "", costo: 0, fechaC: "", obs: "Con gancho", cat: "Seguridad"},
+    {id: 9, nombre: "Tijera de corte de hierro", estado: "Perdido", fechaAct: "14/04", prestado: "Propio", quien: "", costo: 0, fechaC: "", obs: "Reportado perdido", cat: "Manual"},
+    {id: 10, nombre: "Puntales metálicos (356)", estado: "Bueno", fechaAct: "14/04", prestado: "Propio", quien: "", costo: 0, fechaC: "", obs: "Más 35 prestados", cat: "Varios"},
+    {id: 11, nombre: "Vibrador con tripa", estado: "Bueno", fechaAct: "14/04", prestado: "Propio", quien: "", costo: 0, fechaC: "", obs: "", cat: "Eléctrica"}
 ];
 
 let editId = null;
 
 function render() {
     const lista = document.getElementById('lista-herramientas');
-    document.getElementById('fecha-actual').textContent = new Date().toLocaleDateString();
+    document.getElementById('fecha-actual').textContent = new Date().toLocaleDateString('es-AR');
     
     lista.innerHTML = inventario.map(h => `
         <div class="fila">
@@ -157,13 +158,13 @@ function render() {
                 <span class="sub-info">${h.cat} | Act: ${h.fechaAct}</span>
             </div>
             <div style="text-align:center">
-                <button class="btn-est ${h.estado.toLowerCase() === 'bueno' ? 'bueno' : (h.estado.toLowerCase() === 'roto' ? 'roto' : '')}" 
+                <button class="btn-est ${h.estado === 'Bueno' ? 'bueno' : (h.estado === 'Roto' ? 'roto' : '')}" 
                         onclick="abrirDetalle(${h.id})">
                     ${h.estado.toUpperCase()}
                 </button>
             </div>
             <div style="text-align:center">
-                <button class="btn-est" style="width:40px" onclick="abrirDetalle(${h.id})">i</button>
+                <button class="btn-est" style="width:40px" onclick="abrirDetalle(${h.id})">✏️</button>
             </div>
         </div>
     `).join('');
@@ -199,6 +200,7 @@ function guardarCambios() {
     inventario[idx].obs = document.getElementById('mod-obs').value;
     inventario[idx].fechaAct = new Date().toLocaleDateString('es-AR', {day:'2-digit', month:'2-digit'});
     
+    guardarDatos();
     cerrarModales();
     render();
 }
@@ -209,7 +211,7 @@ function abrirModalNuevo() {
 
 function crearHerramienta() {
     const nom = document.getElementById('new-nombre').value;
-    if(!nom) return alert("Ponle un nombre");
+    if(!nom) return alert("Ingrese el nombre de la herramienta");
     
     const nueva = {
         id: Date.now(),
@@ -225,14 +227,16 @@ function crearHerramienta() {
     };
     
     inventario.push(nueva);
+    guardarDatos();
     document.getElementById('new-nombre').value = "";
     cerrarModales();
     render();
 }
 
 function eliminarHerramienta() {
-    if(confirm("¿Seguro quieres eliminar esta herramienta?")) {
+    if(confirm("¿Seguro desea eliminar este elemento?")) {
         inventario = inventario.filter(x => x.id !== editId);
+        guardarDatos();
         cerrarModales();
         render();
     }
@@ -243,8 +247,7 @@ function cerrarModales() {
 }
 
 function guardarDatos() {
-    localStorage.setItem('sdb_inv_v2', JSON.stringify(inventario));
-    alert("Inventario guardado localmente.");
+    localStorage.setItem('sdb_herramientas_v1', JSON.stringify(inventario));
 }
 
 function exportarPDF() {
@@ -254,21 +257,26 @@ function exportarPDF() {
     el.style.fontFamily = "Arial";
     
     let tabla = `<h2>SDB - REPORTE DE INVENTARIO</h2>
+    <p>Fecha de reporte: ${new Date().toLocaleDateString()}</p>
     <table border="1" style="width:100%; border-collapse:collapse; font-size:10px">
         <thead>
             <tr style="background:#eee">
-                <th>HERRAMIENTA</th><th>ESTADO</th><th>DUEÑO</th><th>COMPRA</th><th>OBS</th>
+                <th style="padding:5px">ELEMENTO</th>
+                <th style="padding:5px">ESTADO</th>
+                <th style="padding:5px">DUEÑO</th>
+                <th style="padding:5px">INFO COMPRA</th>
+                <th style="padding:5px">OBSERVACIONES</th>
             </tr>
         </thead>
         <tbody>`;
     
     inventario.forEach(h => {
         tabla += `<tr>
-            <td><b>${h.nombre}</b><br>${h.cat}</td>
-            <td>${h.estado}</td>
-            <td>${h.prestado === 'Prestado' ? h.quien : 'SDB'}</td>
-            <td>${h.fechaC || '-'} ($${h.costo})</td>
-            <td>${h.obs}</td>
+            <td style="padding:5px"><b>${h.nombre}</b><br>${h.cat}</td>
+            <td style="padding:5px; text-align:center">${h.estado}</td>
+            <td style="padding:5px">${h.prestado === 'Prestado' ? h.quien : 'Propio SDB'}</td>
+            <td style="padding:5px">${h.fechaC || '-'} ($${h.costo})</td>
+            <td style="padding:5px">${h.obs}</td>
         </tr>`;
     });
     
@@ -277,7 +285,7 @@ function exportarPDF() {
     
     html2pdf().set({
         margin: 10,
-        filename: `Inventario_SDB_${new Date().toLocaleDateString()}.pdf`,
+        filename: `Inventario_SDB_${new Date().toISOString().slice(0,10)}.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: { scale: 2 },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
