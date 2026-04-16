@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>SDB — Inventario Total</title>
+<title>SDB — Inventario por Categorías</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
 <style>
@@ -11,70 +11,68 @@
   
   html, body { background: var(--fondo); color: var(--texto); font-family: -apple-system, sans-serif; margin: 0; padding: 0; overflow: hidden; height: 100%; position: fixed; width: 100%; }
 
-  /* Encabezado y Botones */
-  #header-fijo { background: var(--sup); border-bottom: 2px solid var(--amarillo); padding: 8px; z-index: 100; }
-  .controles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-bottom: 8px; }
-  .btn-acc { border: none; padding: 12px 0; border-radius: 4px; font-size: 9px; font-weight: 900; text-transform: uppercase; cursor: pointer; color: white; text-align: center; }
+  #header-fijo { background: var(--sup); border-bottom: 2px solid var(--amarillo); padding: 12px 10px; z-index: 100; }
+  .controles { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 10px; }
+  .btn-acc { border: none; padding: 15px 0; border-radius: 6px; font-size: 11px; font-weight: 900; text-transform: uppercase; cursor: pointer; color: white; text-align: center; }
   .btn-guardar { background: var(--amarillo); color: black; }
-  .btn-dia { background: #555; }
-  .btn-sem { background: var(--azul); }
-  .btn-mes { background: var(--naranja); }
+  .btn-pdf { background: var(--verde); }
 
-  /* Contenedor de Tabla con Scroll */
   #contenedor-tabla { 
     overflow-x: auto; 
     overflow-y: auto; 
-    height: calc(100vh - 120px); 
+    height: calc(100vh - 125px); 
     -webkit-overflow-scrolling: touch;
     background: var(--fondo);
   }
 
-  table { width: 1200px; border-collapse: collapse; font-size: 11px; table-layout: fixed; }
+  table { width: 1300px; border-collapse: collapse; font-size: 11px; table-layout: fixed; margin-bottom: 50px; }
   
   th { 
     position: sticky; top: 0; background: #2E2E2E; color: var(--amarillo); 
     padding: 12px 5px; text-align: left; font-size: 10px; border-bottom: 2px solid var(--borde); 
-    text-transform: uppercase; z-index: 10;
+    text-transform: uppercase; z-index: 20;
   }
 
-  td { padding: 10px 5px; border-bottom: 1px solid var(--borde); vertical-align: middle; word-wrap: break-word; }
+  /* Separador de Categoría */
+  .separador-cat { 
+    background: #333; color: var(--amarillo); font-weight: 900; 
+    padding: 8px 10px; font-size: 12px; text-transform: uppercase;
+    border-left: 5px solid var(--amarillo);
+  }
 
-  /* Anchos de Columna */
-  .col-nom { width: 180px; font-weight: bold; position: sticky; left: 0; background: var(--fondo); z-index: 5; border-right: 1px solid var(--borde); }
+  td { padding: 10px 5px; border-bottom: 1px solid var(--borde); vertical-align: middle; }
+
+  .col-nom { width: 200px; font-weight: bold; position: sticky; left: 0; background: #1A1A1A; z-index: 10; border-right: 1px solid var(--borde); }
   .col-est { width: 100px; text-align: center; }
-  .col-act { width: 100px; text-align: center; color: #888; }
-  .col-due { width: 120px; }
+  .col-act { width: 80px; text-align: center; color: #888; }
+  .col-due { width: 110px; }
   .col-quien { width: 120px; }
   .col-costo { width: 90px; }
   .col-fecha { width: 100px; }
-  .col-obs { width: 200px; font-size: 10px; color: #aaa; }
-  .col-edit { width: 50px; text-align: center; }
+  .col-obs { width: 250px; font-size: 10px; color: #aaa; }
+  .col-edit { width: 60px; text-align: center; }
 
-  /* Estilos de Estado */
   .badge { padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 9px; }
   .bueno { background: rgba(61,184,90,0.2); color: var(--verde); border: 1px solid var(--verde); }
   .roto { background: rgba(226,75,74,0.2); color: var(--rojo); border: 1px solid var(--rojo); }
   .perdido { background: rgba(255,255,255,0.1); color: #888; border: 1px solid #555; }
 
-  /* Botón Flotante */
-  #fab { position: fixed; bottom: 20px; right: 20px; width: 50px; height: 50px; background: var(--amarillo); border-radius: 50%; display: flex; justify-content: center; align-items: center; border: none; box-shadow: 0 4px 10px rgba(0,0,0,0.5); font-size: 24px; font-weight: bold; z-index: 100; }
+  #fab { position: fixed; bottom: 20px; right: 20px; width: 55px; height: 55px; background: var(--amarillo); border-radius: 50%; display: flex; justify-content: center; align-items: center; border: none; box-shadow: 0 4px 15px rgba(0,0,0,0.6); font-size: 28px; z-index: 100; }
 
-  /* Modales (solo para cargar o editar nombre) */
   .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 200; justify-content: center; align-items: center; }
-  .modal { background: var(--sup); width: 90%; max-width: 350px; padding: 20px; border-radius: 10px; border: 1px solid var(--borde); }
-  input, select, textarea { width: 100%; background: #000; color: white; border: 1px solid var(--borde); padding: 10px; margin: 8px 0; border-radius: 5px; box-sizing: border-box; }
+  .modal { background: var(--sup); width: 90%; max-width: 400px; padding: 20px; border-radius: 12px; border: 1px solid var(--borde); max-height: 90vh; overflow-y: auto; }
+  label { font-size: 10px; color: var(--amarillo); font-weight: bold; }
+  input, select, textarea { width: 100%; background: #000; color: white; border: 1px solid var(--borde); padding: 12px; margin: 5px 0 15px 0; border-radius: 6px; box-sizing: border-box; font-size: 14px; }
 </style>
 </head>
 <body>
 
 <div id="header-fijo">
   <div class="controles">
-    <button class="btn-acc btn-guardar" onclick="guardarLocal()">Guardar</button>
-    <button class="btn-acc btn-dia" onclick="exportarPDF('DIARIO')">Diario</button>
-    <button class="btn-acc btn-sem" onclick="exportarPDF('SEMANAL')">Semanal</button>
-    <button class="btn-acc btn-mes" onclick="exportarPDF('MENSUAL')">Mensual</button>
+    <button class="btn-acc btn-guardar" onclick="guardarLocal()">Guardar Datos</button>
+    <button class="btn-acc btn-pdf" onclick="exportarPDF()">Generar Reporte PDF</button>
   </div>
-  <div style="font-size: 10px; color: var(--amarillo); font-weight: bold;">SDB-1165 | INVENTARIO DE HERRAMIENTAS</div>
+  <div style="font-size: 11px; color: var(--amarillo); font-weight: bold; padding-left: 5px; text-align: center;">SDB-1165 | INVENTARIO SEPARADO POR CATEGORÍAS</div>
 </div>
 
 <div id="contenedor-tabla">
@@ -83,13 +81,13 @@
       <tr>
         <th class="col-nom">Herramienta</th>
         <th class="col-est">Estado</th>
-        <th class="col-act">Últ. Act.</th>
+        <th class="col-act">Act.</th>
         <th class="col-due">Dueño</th>
-        <th class="col-quien">Lentador</th>
+        <th class="col-quien">Prestador</th>
         <th class="col-costo">Costo</th>
         <th class="col-fecha">F. Compra</th>
-        <th class="col-obs">Comentarios</th>
-        <th class="col-edit">...</th>
+        <th class="col-obs">Observaciones</th>
+        <th class="col-edit">Acción</th>
       </tr>
     </thead>
     <tbody id="body-tabla"></tbody>
@@ -100,83 +98,134 @@
 
 <div class="overlay" id="modal-form">
   <div class="modal">
-    <h3 id="modal-tit" style="color:var(--amarillo); margin:0;">Cargar / Editar</h3>
-    <input type="text" id="f-nom" placeholder="Nombre (Ej: Amoladora)">
-    <select id="f-est">
-      <option value="Bueno">Bueno</option>
-      <option value="Regular">Regular</option>
-      <option value="Roto">Roto</option>
-      <option value="Perdido">Perdido</option>
+    <h3 id="modal-tit" style="color:var(--amarillo); margin-top:0;">Cargar Elemento</h3>
+    
+    <label>Nombre del Elemento</label>
+    <input type="text" id="f-nom" placeholder="Ej: Rotopercutora">
+    
+    <label>Categoría (Para separar en lista)</label>
+    <select id="f-cat">
+      <option value="ELÉCTRICAS">Herramientas Eléctricas</option>
+      <option value="MANUALES">Herramientas Manuales</option>
+      <option value="SEGURIDAD">Seguridad / Arneses</option>
+      <option value="OBRA/VARIOS">Varios / Puntales / Palas</option>
     </select>
-    <select id="f-due" onchange="document.getElementById('f-quien').style.display = this.value=='Prestado'?'block':'none'">
-      <option value="SDB">Propio SDB</option>
-      <option value="Prestado">Prestado</option>
-    </select>
-    <input type="text" id="f-quien" placeholder="¿Quién prestó?" style="display:none">
-    <input type="number" id="f-costo" placeholder="Costo $">
-    <input type="date" id="f-fcomp">
-    <textarea id="f-obs" placeholder="Observaciones..." rows="2"></textarea>
-    <button class="btn-acc btn-guardar" style="width:100%" onclick="procesarForm()">ACEPTAR</button>
-    <button class="btn-acc" style="width:100%; background:var(--rojo); margin-top:5px" onclick="eliminarItem()">ELIMINAR</button>
-    <button onclick="cerrarModal()" style="width:100%; background:none; color:#888; border:none; margin-top:10px">Cerrar</button>
+
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px">
+      <div>
+        <label>Estado</label>
+        <select id="f-est">
+          <option value="Bueno">Bueno</option>
+          <option value="Regular">Regular</option>
+          <option value="Roto">Roto</option>
+          <option value="Perdido">Perdido</option>
+        </select>
+      </div>
+      <div>
+        <label>Dueño</label>
+        <select id="f-due" onchange="document.getElementById('sec-quien').style.display = this.value=='Prestado'?'block':'none'">
+          <option value="Propio SDB">Propio SDB</option>
+          <option value="Prestado">Prestado</option>
+        </select>
+      </div>
+    </div>
+
+    <div id="sec-quien" style="display:none">
+      <label>¿Quién prestó?</label>
+      <input type="text" id="f-quien" placeholder="Nombre">
+    </div>
+
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px">
+      <div>
+        <label>Costo $</label>
+        <input type="number" id="f-costo">
+      </div>
+      <div>
+        <label>Fecha Compra</label>
+        <input type="date" id="f-fcomp">
+      </div>
+    </div>
+
+    <label>Comentarios</label>
+    <textarea id="f-obs" rows="2"></textarea>
+
+    <button class="btn-acc btn-guardar" style="width:100%; padding:15px; font-size:14px" onclick="procesarForm()">CONFIRMAR DATOS</button>
+    <button class="btn-acc" id="btn-borrar" style="width:100%; background:var(--rojo); margin-top:8px; display:none" onclick="eliminarItem()">ELIMINAR PERMANENTE</button>
+    <button onclick="cerrarModal()" style="width:100%; background:none; color:#888; border:none; margin-top:10px">CANCELAR</button>
   </div>
 </div>
 
 <script>
-// Datos del PDF incorporados [cite: 1, 2, 3, 4, 5, 8, 15, 16, 17, 22, 24, 27, 29, 30, 35, 36]
-let db = JSON.parse(localStorage.getItem('sdb_inv_v2')) || [
-    {id:1, nom:"Rotopercutora", est:"Bueno", act:"14/04", due:"SDB", quien:"", costo:"", fcomp:"", obs:""},
-    {id:2, nom:"Dobladora", est:"Bueno", act:"14/04", due:"SDB", quien:"", costo:"", fcomp:"", obs:""},
-    {id:3, nom:"Amoladora Angular Nueva", est:"Bueno", act:"14/04", due:"SDB", quien:"", costo:"", fcomp:"", obs:"Makita [cite: 8]"},
-    {id:4, nom:"Martillo Demo. SDS MAX", est:"Bueno", act:"06/02", due:"SDB", quien:"", costo:"", fcomp:"2026-02-06", obs:"NUEVO [cite: 27]"},
-    {id:5, nom:"Puntales Metálicos (356)", est:"Bueno", act:"14/04", due:"SDB", quien:"", costo:"", fcomp:"", obs:"+35 prestados [cite: 36]"},
-    {id:6, nom:"Tijera Corte Hierro", est:"Perdido", act:"14/04", due:"SDB", quien:"", costo:"", fcomp:"", obs:"PERDIDO [cite: 16]"},
-    {id:7, nom:"Amoladora 9' Milwaukee", est:"Bueno", act:"14/04", due:"SDB", quien:"", costo:"", fcomp:"", obs:"[cite: 29]"}
+let db = JSON.parse(localStorage.getItem('sdb_inv_v3')) || [
+    {id:1, nom:"Rotopercutora", cat:"ELÉCTRICAS", est:"Bueno", act:"14/04", due:"Propio SDB", quien:"", costo:"", fcomp:"", obs:""},
+    {id:2, nom:"Martillo demoledor 6 max", cat:"ELÉCTRICAS", est:"Bueno", act:"06/02", due:"Propio SDB", quien:"", costo:"", fcomp:"2026-02-06", obs:"NUEVO"},
+    {id:3, nom:"Amoladora angular nueva", cat:"ELÉCTRICAS", est:"Bueno", act:"14/04", due:"Propio SDB", quien:"", costo:"", fcomp:"", obs:"Makita"},
+    {id:4, nom:"Dobladora Φ12/16/25", cat:"MANUALES", est:"Bueno", act:"14/04", due:"Propio SDB", quien:"", costo:"", fcomp:"", obs:""},
+    {id:5, nom:"Tijera de corte de hierro", cat:"MANUALES", est:"Perdido", act:"14/04", due:"Propio SDB", quien:"", costo:"", fcomp:"", obs:"PERDIDO"},
+    {id:6, nom:"Arnés con cabo (27/01)", cat:"SEGURIDAD", est:"Bueno", act:"14/04", due:"Propio SDB", quien:"", costo:"", fcomp:"", obs:""},
+    {id:7, nom:"Puntales Metálicos (356)", cat:"OBRA/VARIOS", est:"Bueno", act:"14/04", due:"Propio SDB", quien:"", costo:"", fcomp:"", obs:"+35 prestados"}
 ];
 
 let idEdit = null;
 
 function render() {
   const body = document.getElementById('body-tabla');
-  body.innerHTML = db.map(h => `
-    <tr>
-      <td class="col-nom">${h.nom}</td>
-      <td class="col-est"><span class="badge ${h.est.toLowerCase()}">${h.est}</span></td>
-      <td class="col-act">${h.act}</td>
-      <td class="col-due">${h.due}</td>
-      <td class="col-quien">${h.quien || '-'}</td>
-      <td class="col-costo">$${h.costo || '0'}</td>
-      <td class="col-fecha">${h.fcomp || '-'}</td>
-      <td class="col-obs">${h.obs}</td>
-      <td class="col-edit"><button onclick="abrirEdicion(${h.id})" style="background:none; border:none; color:var(--amarillo)">✏️</button></td>
-    </tr>
-  `).join('');
+  body.innerHTML = "";
+  
+  const categorias = [...new Set(db.map(x => x.cat))].sort();
+  
+  categorias.forEach(cat => {
+    body.innerHTML += `<tr><td colspan="9" class="separador-cat">${cat}</td></tr>`;
+    
+    const items = db.filter(x => x.cat === cat);
+    items.forEach(h => {
+      body.innerHTML += `
+        <tr>
+          <td class="col-nom">${h.nom}</td>
+          <td class="col-est"><span class="badge ${h.est.toLowerCase()}">${h.est}</span></td>
+          <td class="col-act">${h.act}</td>
+          <td class="col-due">${h.due}</td>
+          <td class="col-quien">${h.quien || '-'}</td>
+          <td class="col-costo">$${h.costo || '0'}</td>
+          <td class="col-fecha">${h.fcomp || '-'}</td>
+          <td class="col-obs">${h.obs}</td>
+          <td class="col-edit"><button onclick="abrirEdicion(${h.id})" style="background:var(--sup); border:1px solid #444; color:var(--amarillo); border-radius:4px; padding:4px 8px">EDIT</button></td>
+        </tr>
+      `;
+    });
+  });
 }
 
 function abrirCarga() {
   idEdit = null;
-  document.getElementById('modal-tit').innerText = "Nueva Herramienta";
-  document.getElementById('f-nom').value = "";
+  document.getElementById('modal-tit').innerText = "Cargar Elemento";
+  document.getElementById('btn-borrar').style.display = 'none';
+  document.querySelectorAll('input, textarea').forEach(i => i.value = "");
   document.getElementById('modal-form').style.display = 'flex';
 }
 
 function abrirEdicion(id) {
   idEdit = id;
   const h = db.find(x => x.id === id);
-  document.getElementById('modal-tit').innerText = "Editar " + h.nom;
+  document.getElementById('modal-tit').innerText = "Editar Datos";
+  document.getElementById('btn-borrar').style.display = 'block';
   document.getElementById('f-nom').value = h.nom;
+  document.getElementById('f-cat').value = h.cat;
   document.getElementById('f-est').value = h.est;
   document.getElementById('f-due').value = h.due;
   document.getElementById('f-quien').value = h.quien;
   document.getElementById('f-costo').value = h.costo;
   document.getElementById('f-fcomp').value = h.fcomp;
   document.getElementById('f-obs').value = h.obs;
+  
+  document.getElementById('sec-quien').style.display = h.due=='Prestado'?'block':'none';
   document.getElementById('modal-form').style.display = 'flex';
 }
 
 function procesarForm() {
   const item = {
     nom: document.getElementById('f-nom').value,
+    cat: document.getElementById('f-cat').value,
     est: document.getElementById('f-est').value,
     due: document.getElementById('f-due').value,
     quien: document.getElementById('f-quien').value,
@@ -185,6 +234,8 @@ function procesarForm() {
     obs: document.getElementById('f-obs').value,
     act: new Date().toLocaleDateString('es-AR', {day:'2-digit', month:'2-digit'})
   };
+
+  if(!item.nom) return alert("Falta nombre");
 
   if(idEdit) {
     const idx = db.findIndex(x => x.id === idEdit);
@@ -200,7 +251,7 @@ function procesarForm() {
 }
 
 function eliminarItem() {
-  if(idEdit && confirm("¿Eliminar esta herramienta?")) {
+  if(confirm("¿Eliminar para siempre?")) {
     db = db.filter(x => x.id !== idEdit);
     guardarLocal();
     cerrarModal();
@@ -209,21 +260,38 @@ function eliminarItem() {
 }
 
 function cerrarModal() { document.getElementById('modal-form').style.display = 'none'; }
-function guardarLocal() { localStorage.setItem('sdb_inv_v2', JSON.stringify(db)); }
+function guardarLocal() { localStorage.setItem('sdb_inv_v3', JSON.stringify(db)); alert("Datos guardados"); }
 
-function exportarPDF(tipo) {
+function exportarPDF() {
+  const fActual = new Date();
+  const fechaStr = fActual.toLocaleDateString('es-AR');
+  const horaStr = fActual.toLocaleTimeString('es-AR', {hour: '2-digit', minute:'2-digit'});
+
   const el = document.createElement('div');
   el.style.padding = "20px";
   el.style.color = "#000";
-  el.innerHTML = `<h2>SDB - REPORTE DE INVENTARIO ${tipo}</h2><p>Fecha: ${new Date().toLocaleDateString()}</p>` + 
-                 document.getElementById('contenedor-tabla').innerHTML;
+  el.style.fontFamily = "Arial";
   
-  // Ocultar columna de edición en el PDF
-  el.querySelectorAll('.col-edit').forEach(c => c.style.display = 'none');
+  let tablaHtml = document.getElementById('contenedor-tabla').innerHTML;
+  el.innerHTML = `<h2>SDB - REPORTE DE INVENTARIO</h2><p><b>Emitido:</b> ${fechaStr} a las ${horaStr}</p>` + tablaHtml;
+  el.querySelectorAll('.col-edit').forEach(c => c.remove());
   
+  const style = document.createElement('style');
+  style.innerHTML = `
+    table { width: 100%; border-collapse: collapse; font-size: 9px; }
+    th { background: #eee; color: #000; border: 1px solid #000; padding: 5px; }
+    td { border: 1px solid #000; padding: 4px; color: #000; }
+    .separador-cat { background: #ddd; font-weight: bold; text-align: center; font-size: 11px; }
+    .badge { font-weight: bold; }
+  `;
+  el.appendChild(style);
+
+  // Nombre del archivo con la fecha, ej: Reporte_SDB_16-04-2026.pdf
+  const nombreArchivo = `Reporte_SDB_${fechaStr.replace(/\//g, '-')}.pdf`;
+
   html2pdf().set({
     margin: 5,
-    filename: `SDB_Inventario_${tipo}.pdf`,
+    filename: nombreArchivo,
     jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
   }).from(el).save();
 }
