@@ -33,7 +33,7 @@
     text-transform: uppercase; z-index: 20;
   }
 
-  /* Separador de Categoría */
+  /* Separador de Categoría (Vista Web) */
   .separador-cat { 
     background: #333; color: var(--amarillo); font-weight: 900; 
     padding: 8px 10px; font-size: 12px; text-transform: uppercase;
@@ -269,29 +269,48 @@ function exportarPDF() {
 
   const el = document.createElement('div');
   el.style.padding = "20px";
-  el.style.color = "#000";
-  el.style.fontFamily = "Arial";
+  el.style.fontFamily = "Arial, sans-serif";
+  el.style.backgroundColor = "#ffffff"; // Fondo blanco forzado
   
   let tablaHtml = document.getElementById('contenedor-tabla').innerHTML;
-  el.innerHTML = `<h2>SDB - REPORTE DE INVENTARIO</h2><p><b>Emitido:</b> ${fechaStr} a las ${horaStr}</p>` + tablaHtml;
+  
+  el.innerHTML = `
+    <h2 style="color: #000; text-align: center; margin-bottom: 5px;">SDB - REPORTE DE INVENTARIO</h2>
+    <p style="color: #000; text-align: center; margin-top: 0; margin-bottom: 20px; font-size: 12px;">
+      <b>Emitido:</b> ${fechaStr} a las ${horaStr}
+    </p>
+  ` + tablaHtml;
+  
+  // Quitar la columna de editar para el PDF
   el.querySelectorAll('.col-edit').forEach(c => c.remove());
   
+  // APLICAR ESTILOS ESTRICTOS DE BLANCO Y NEGRO PARA EL PDF
   const style = document.createElement('style');
   style.innerHTML = `
-    table { width: 100%; border-collapse: collapse; font-size: 9px; }
-    th { background: #eee; color: #000; border: 1px solid #000; padding: 5px; }
-    td { border: 1px solid #000; padding: 4px; color: #000; }
-    .separador-cat { background: #ddd; font-weight: bold; text-align: center; font-size: 11px; }
-    .badge { font-weight: bold; }
+    * { color: #000 !important; } /* Fuerza todo el texto a negro */
+    table { width: 100%; border-collapse: collapse; font-size: 10px; }
+    th { background-color: #e6e6e6 !important; color: #000 !important; border: 1px solid #333 !important; padding: 6px; font-weight: bold !important; text-transform: uppercase; }
+    td { background-color: #ffffff !important; border: 1px solid #333 !important; padding: 6px; color: #000 !important; }
+    
+    /* Evitar que las celdas hereden el fondo negro de la web */
+    .col-nom { font-weight: bold !important; background-color: #ffffff !important; }
+    
+    /* Separador de categoría en gris claro */
+    .separador-cat { background-color: #f2f2f2 !important; color: #000 !important; border: 1px solid #333 !important; text-align: center; font-weight: bold !important; padding: 8px; font-size: 12px; }
+    
+    /* Quitar los colores a los badges de estado (Bueno, Roto) */
+    .badge { background: transparent !important; border: none !important; font-weight: bold !important; color: #000 !important; padding: 0 !important; }
   `;
   el.appendChild(style);
 
-  // Nombre del archivo con la fecha, ej: Reporte_SDB_16-04-2026.pdf
   const nombreArchivo = `Reporte_SDB_${fechaStr.replace(/\//g, '-')}.pdf`;
 
+  // Configuración del PDF forzando fondo blanco para evitar mezclas con el modo oscuro
   html2pdf().set({
-    margin: 5,
+    margin: 10,
     filename: nombreArchivo,
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2, backgroundColor: '#ffffff' }, // Acá se asegura que el canvas no tome el negro de la pantalla
     jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
   }).from(el).save();
 }
